@@ -30,28 +30,39 @@ export async function saveSubscription(
         status: subscription.status,
         price_id: subscription.items.data[0].price.id
     }
-
+    console.log('Create Action Bool value: ', createAction);
     if (createAction){
-        await fauna.query(
-            q.Create(
-                q.Collection('subscriptions'),
-                { data: subscriptionData }
+        try {
+            await fauna.query(
+                q.Create(
+                    q.Collection('subscriptions'),
+                    { data: subscriptionData }
+                )
             )
-        )
+        } catch (err) {
+            console.log('Error creating Subscription in the faunaDB: ', err.message)
+        }
+        
     } else {
-        await fauna.query(
-            q.Replace(
-                q.Select(
-                    "ref",
-                    q.Get(
-                        q.Match(
-                            q.Index('subscriptions_by_id'),
-                            subscriptionId,
+        try {
+            await fauna.query(
+                q.Replace(
+                    q.Select(
+                        "ref",
+                        q.Get(
+                            q.Match(
+                                q.Index('subscription_by_id'),
+                                subscriptionId,
+                            )
                         )
-                    )
-                ),
-                { data: subscriptionData }
+                    ),
+                    { data: subscriptionData }
+                )
             )
-        )
+        } catch (err) {
+            console.log('Error Replacing Subscription in the faunaDB: ', err.message)
+        }
+
+
     }
 }
